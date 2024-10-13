@@ -43,7 +43,7 @@ ul {
   list-style: none;
 }
 
-body {
+/* body {
   min-height: 100vh;
   color: var(--color-text);
   background: var(--color-background);
@@ -64,4 +64,4 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
+} */
