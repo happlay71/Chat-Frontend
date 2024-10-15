@@ -1,21 +1,47 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/chat.png?asset'
+const NODE_ENV = process.env.NODE_ENV
+
+const login_width = 300
+const login_height = 370
+const register_height = 490
 
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    icon: icon,
+    width: login_width,
+    height: login_height,
     show: false,
     autoHideMenuBar: true,
-    ...(process.platform === 'linux' ? { icon } : {}),
+    titleBarStyle: 'hidden', // 隐藏标题栏
+    resizable: false, // 不允许更改窗口大小
+    frame: true, // 操作系统标准边框和标题栏
+    transparent: true, // 背景透明化
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: false,
+      contextIsolation: false // 上下文隔离
     }
   })
+
+  // 主进程监听渲染进程
+  ipcMain.on('loginOrRegister', (e, isLogin) => {
+    mainWindow.setResizable(true)
+    if (isLogin) {
+      mainWindow.setSize(login_width, login_height)
+    } else {
+      mainWindow.setSize(login_width, register_height)
+    }
+    mainWindow.setResizable(false)
+  })
+
+  //打开控制台
+  if (NODE_ENV === 'development') {
+    mainWindow.webContents.openDevTools()
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
