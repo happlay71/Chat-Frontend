@@ -15,6 +15,20 @@ export default defineConfig({
         '@': resolve('src/renderer/src')
       }
     },
-    plugins: [vue()]
+    plugins: [vue()],
+    // 开发模式，防止跨域，设置代理
+    server: {
+      hmr: true,
+      port: 5000,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:5050/',
+          changeOrigin: true,
+          pathRewriter: {
+            '^api': '/api'
+          }
+        }
+      }
+    }
   }
 })

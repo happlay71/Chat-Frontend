@@ -12,7 +12,7 @@
             >
               <!-- 邮箱 -->
               <el-form-item prop="email" >
-                <el-input size="large" clearable placeholder="请输入邮箱" v-model.trim="formData.email">
+                <el-input size="large" clearable placeholder="请输入邮箱" maxlength="30" v-model.trim="formData.email">
                     <!-- #prefix 用于在输入框的前面（左侧）插入内容。在这里插入了一个图标。 -->
                     <template #prefix>
                         <span class="iconfont icon-email"></span>
@@ -22,7 +22,7 @@
               </el-form-item>
               <!-- 昵称 -->
               <el-form-item prop="nickName"  v-if="!isLogin">
-                <el-input size="large" clearable placeholder="请输入昵称" v-model.trim="formData.nickName">
+                <el-input size="large" clearable placeholder="请输入昵称" maxlength="15" v-model.trim="formData.nickName">
                     <!-- #prefix 用于在输入框的前面（左侧）插入内容。在这里插入了一个图标。 -->
                     <template #prefix>
                         <span class="iconfont icon-user-nick"></span>
@@ -50,11 +50,14 @@
               </el-form-item>
               <!-- 验证码 -->
               <el-form-item prop="checkCode" >
-                <el-input size="large" show-password clearable placeholder="请输入验证码" v-model.trim="formData.checkCode">
-                    <template #prefix>
-                        <span class="iconfont icon-checkcode"></span>
-                    </template>
-                </el-input>
+                <div class="check-code-panel">
+                    <el-input size="large" clearable placeholder="请输入验证码" v-model.trim="formData.checkCode">
+                        <template #prefix>
+                            <span class="iconfont icon-checkcode"></span>
+                        </template>
+                    </el-input>
+                    <img :src="checkCodeUrl" class="check-code" @click="changeCheckCode" />
+                </div>
                 <div v-if="errorMsg.checkCode" class="error-msg">{{ errorMsg.checkCode }}</div>
               </el-form-item>
               <el-form-item >
@@ -94,7 +97,29 @@ const changOpType  = () => {
     // 渲染进程向主进程发送消息
     window.ipcRenderer.send('loginOrRegister', !isLogin.value)
     isLogin.value = !isLogin.value
+    nextTick(() => {
+        formDataRef.value.resetFields()
+        formData.value = {}
+        cleanVerify()
+        changeCheckCode()
+    })
 }
+
+// 获取验证码
+const checkCodeUrl = ref(null)
+const changeCheckCode = async () => {
+    let result = await proxy.Request({
+       url: proxy.Api.checkCode
+    })
+    if(!result){
+      return
+    }
+    console.log(result)
+    console.log(result.data.checkCode)
+    checkCodeUrl.value = result.data.checkCode
+    localStorage.setItem('checkCodeKey', result.data.checkCodeKey)  // 将服务器返回的 checkCodeKey 存储到浏览器的 localStorage
+}
+changeCheckCode()
 
 const errorMsg = ref({
   email: null,
@@ -109,13 +134,13 @@ const submit = () => {
     cleanVerify()
 
     // 使用 checkValue 进行校验
-    if (!checkValue('checkEmail', formData.value.email, '请输入邮箱', '邮箱格式不正确，请检查')) {
+    if (!checkValue('checkEmail', formData.value.email, '', '邮箱格式不正确，请检查')) {
         return;
     }
-    if (!checkValue('checkPassword', formData.value.password, '请输入密码', '密码必须包含字母和数字(可含特殊字符)，8-18位')) {
+    if (!checkValue('checkPassword', formData.value.password, '', '密码必须包含字母和数字(可含特殊字符)，8-18位')) {
         return;
     }
-    if (!checkValue(null, formData.value.checkCode, '请输入验证码')) {
+    if (!checkValue(null, formData.value.checkCode, '')) {
         return;
     }
 
@@ -223,7 +248,7 @@ const cleanVerify = () => {
             display: flex;
             .check-code {
                 cursor: pointer;
-                widows: 120px;
+                width: 120px;
                 margin-left: 5px;
             }
         }

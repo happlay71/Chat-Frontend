@@ -45,6 +45,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    mainWindow.setTitle('Chat')
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
