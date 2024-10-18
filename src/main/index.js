@@ -1,9 +1,12 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Menu, Tray } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/chat.png?asset'
-const NODE_ENV = process.env.NODE_ENV
+import user from '../../resources/user.png?asset'
+import exit from '../../resources/exit.png?asset'
+import { onLoginOrRegister, onLoginSuccess, winTitleOp } from './ipc'
 
+const NODE_ENV = process.env.NODE_ENV
 const login_width = 300
 const login_height = 370
 const register_height = 490
@@ -25,17 +28,6 @@ function createWindow() {
       sandbox: false,
       contextIsolation: false // 上下文隔离
     }
-  })
-
-  // 主进程监听渲染进程
-  ipcMain.on('loginOrRegister', (e, isLogin) => {
-    mainWindow.setResizable(true)
-    if (isLogin) {
-      mainWindow.setSize(login_width, login_height)
-    } else {
-      mainWindow.setSize(login_width, register_height)
-    }
-    mainWindow.setResizable(false)
   })
 
   //打开控制台
@@ -60,6 +52,89 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  // 托盘操作
+  const tray = new Tray(icon)
+  const contextMenu = [
+    {
+      icon: exit,
+      label: '退出Chat',
+      click: function () {
+        app.exit()
+      }
+    }
+  ]
+
+  const menu = Menu.buildFromTemplate(contextMenu)
+  tray.setToolTip('Chat')
+  tray.setContextMenu(menu)
+  tray.on('click', () => {
+    mainWindow.setSkipTaskbar(false)
+    mainWindow.show()
+  })
+
+  // 监听登录注册，通过回调函数改变isLogin
+  onLoginOrRegister((isLogin) => {
+    mainWindow.setResizable(true)
+    if (isLogin) {
+      mainWindow.setSize(login_width, login_height)
+    } else {
+      mainWindow.setSize(login_width, register_height)
+    }
+    mainWindow.setResizable(false)
+  })
+
+  onLoginSuccess((config) => {
+    mainWindow.setResizable(true)
+    mainWindow.setSize(850, 800)
+    mainWindow.center()
+    mainWindow.setOpacity(1) // 取消透明
+    mainWindow.setMaximizable(true) // 可改变大小
+    mainWindow.setMinimumSize(800, 600) // 最小
+
+    // 管理员窗口，托盘操作
+    if (config.admin) {
+    }
+
+    // 显示用户，界面
+    contextMenu.unshift({
+      icon: user,
+      label: config.nickName,
+      click: function () {}
+    })
+    tray.setContextMenu(Menu.buildFromTemplate(contextMenu))
+  })
+
+  winTitleOp((e, { action, data }) => {
+    const webContents = e.sender
+    const win = BrowserWindow.fromWebContents(webContents)
+    switch (action) {
+      case 'close': {
+        if (data.closeType == 0) {
+          win.close()
+        } else {
+          win.setSkipTaskbar(true) //
+          win.hide()
+        }
+        break
+      }
+      case 'minimize': {
+        win.minimize()
+        break
+      }
+      case 'maximize': {
+        win.maximize()
+        break
+      }
+      case 'unmaximize': {
+        win.unmaximize()
+        break
+      }
+      case 'top': {
+        win.setAlwaysOnTop(data.top)
+      }
+    }
+  })
 }
 
 // This method will be called when Electron has finished

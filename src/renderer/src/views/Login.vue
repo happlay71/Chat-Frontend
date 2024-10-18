@@ -1,8 +1,11 @@
 <template>
     <div class="login-panel">
         <div class="title drag">Chat</div>
-        <div class="login-form">
-            <!-- <div class="error-msg">{{ errorMsg }}</div> -->
+        <div v-if="showLoading" class="loading-panel">
+            <img src="../assets/img/loading.gif">
+        </div>
+        <div class="login-form" v-else>
+            <!-- <div class="error-msg">{{ backendErrorMsg }}</div> -->
             <el-form
               :model="formData"
               :rules="rules"
@@ -73,12 +76,18 @@
             </el-form>
         </div>
     </div>
+    <WinOp :showSetTop="false" :showMin="false" :showMax="false" :closeType="0"></WinOp>
 </template>
 
 <script setup>
 import { ref, reactive, getCurrentInstance, nextTick } from "vue"
-const { proxy } = getCurrentInstance();
+import { useUserStore } from "@/stores/UserStore";
+import md5 from "js-md5";
+import { useRouter } from "vue-router";
 
+const router = useRouter()
+const userStore = useUserStore()
+const { proxy } = getCurrentInstance();
 const formData = ref({});
 const formDataRef = ref();
 
@@ -109,13 +118,12 @@ const changOpType  = () => {
 const checkCodeUrl = ref(null)
 const changeCheckCode = async () => {
     let result = await proxy.Request({
-       url: proxy.Api.checkCode
+       url: proxy.Api.checkCode,
+       method: 'GET'
     })
     if(!result){
       return
     }
-    console.log(result)
-    console.log(result.data.checkCode)
     checkCodeUrl.value = result.data.checkCode
     localStorage.setItem('checkCodeKey', result.data.checkCodeKey)  // 将服务器返回的 checkCodeKey 存储到浏览器的 localStorage
 }
@@ -128,36 +136,6 @@ const errorMsg = ref({
   rePassword: null,
   checkCode: null
 })
-
-// 提交表单
-const submit = () => {
-    cleanVerify()
-
-    // 使用 checkValue 进行校验
-    if (!checkValue('checkEmail', formData.value.email, '', '邮箱格式不正确，请检查')) {
-        return;
-    }
-    if (!checkValue('checkPassword', formData.value.password, '', '密码必须包含字母和数字(可含特殊字符)，8-18位')) {
-        return;
-    }
-    if (!checkValue(null, formData.value.checkCode, '')) {
-        return;
-    }
-
-    // 检查密码是否一致
-    if (formData.value.password !== formData.value.rePassword) {
-        errorMsg.value.rePassword = '两次密码不一致';
-        return;
-    }
-
-    formDataRef.value.validate(async (valid) => {
-        if (!valid) {
-            return;
-        }
-        console.log('表单验证通过，准备提交...')
-    })
-    
-}
 
 // 校验方法，支持空值和格式校验
 const checkValue = (type, value, emptyMsg, formatMsg = null) => {
@@ -187,6 +165,98 @@ const cleanVerify = () => {
         checkCode: null
     }
 }
+
+const showLoading = ref(false)
+const backendErrorMsg = ref(null); // 专门用于存储后端返回的错误信息
+
+// 提交表单
+const submit = async () => {
+    cleanVerify()
+    backendErrorMsg.value = null; // 清空后端错误消息
+
+    // 使用 checkValue 进行校验
+    if (!checkValue('checkEmail', formData.value.email, '', '邮箱格式不正确，请检查')) {
+        return;
+    }
+    if (!checkValue('checkPassword', formData.value.password, '', '密码必须包含字母和数字(可含特殊字符)，8-18位')) {
+        return;
+    }
+    if (!checkValue(null, formData.value.checkCode, '')) {
+        return;
+    }
+
+    // 检查密码是否一致
+    if (!isLogin && formData.value.password !== formData.value.rePassword) {
+        errorMsg.value.rePassword = '两次密码不一致';
+        return;
+    }
+    
+    formDataRef.value.validate(async (valid) => {
+        if (!valid) {
+            return;
+        }
+    })
+
+    // 登录前加载遮罩
+    if (isLogin.value) {
+        showLoading.value = true
+    }
+
+    let result = await proxy.Request({
+        url: isLogin.value ? proxy.Api.login : proxy.Api.register,
+        showLoading: isLogin.value ? false : true,
+        showError: false,
+        params: {
+            email: formData.value.email,
+            password: isLogin.value ? md5(formData.value.password) : formData.value.password,
+            checkCode: formData.value.checkCode,
+            nickName: formData.value.nickName,
+            checkCodeKey: localStorage.getItem('checkCodeKey')
+        },
+        // errorCallback: (response) => {
+        //     showLoading.value = false
+        //     changeCheckCode()
+        //     errorMsg.value = response.info
+        // }
+        errorCallback: (response) => {
+            showLoading.value = false;
+            changeCheckCode();
+            backendErrorMsg.value = response.info; // 假设后端错误信息在 response.info 中
+            proxy.Message.error(backendErrorMsg.value); // 可选，弹出全局错误提示
+        }
+    })
+
+    if (!result) {
+        return
+    }
+    // 如果登录
+    if (isLogin.value) {
+        // pinia状态管理--返回result和token
+        userStore.setInfo(result.data)
+        localStorage.setItem('token', result.data.token)
+        // 跳转到主窗口
+        router.push('/main')
+
+        const screenWidth = window.screen.width
+        const screenHeight = window.screen.height
+        window.ipcRenderer.send('openChat', {
+            email: formData.value.email,
+            token: result.data.token,
+            userId: result.data.userId,
+            nickName: result.data.nickName,
+            admin: result.data.admin,
+            screenWidth: screenWidth,
+            screenHeight: screenHeight
+        })
+        proxy.Message.success('登录成功')
+    } else {
+        proxy.Message.success('注册成功')
+        changOpType()
+    }
+    
+}
+
+
 </script>
 
 <style lang="scss" scoped>

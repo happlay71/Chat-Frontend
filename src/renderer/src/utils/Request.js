@@ -72,43 +72,107 @@ instance.interceptors.response.use(
   }
 )
 
+// const request = (config) => {
+//   const {
+//     url,
+//     params,
+//     dataType,
+//     showLoading = true,
+//     responseType = responseTypeJson,
+//     showError = true
+//   } = config
+//   let contentType = contentTypeForm
+//   let formData = new FormData() // 创建form对象
+//   for (let key in params) {
+//     formData.append(key, params[key] == undefined ? '' : params[key])
+//   }
+//   if (dataType != null && dataType == 'json') {
+//     contentType = contentTypeJson
+//   }
+//   const token = localStorage.getItem('token')
+//   let headers = {
+//     'Content-Type': contentType,
+//     'X-Requested-With': 'XMLHttpRequest',
+//     token: token
+//   }
+//   return instance
+//     .post(url, formData, {
+//       headers: headers,
+//       showLoading: showLoading,
+//       errorCallback: config.errorCallback,
+//       showError: showError,
+//       responseType: responseType
+//     })
+//     .catch((error) => {
+//       if (error.showError) {
+//         Message.error(error.msg)
+//       }
+//       return null
+//     })
+// }
+
+// export default request
+
 const request = (config) => {
   const {
     url,
     params,
+    method = 'POST', // 默认请求方法为 POST
     dataType,
     showLoading = true,
     responseType = responseTypeJson,
     showError = true
   } = config
+
   let contentType = contentTypeForm
-  let formData = new FormData() // 创建form对象
+  let formData = new FormData()
   for (let key in params) {
     formData.append(key, params[key] == undefined ? '' : params[key])
   }
-  if (dataType != null && dataType == 'json') {
+
+  if (dataType != null && dataType === 'json') {
     contentType = contentTypeJson
   }
+
   const token = localStorage.getItem('token')
   let headers = {
     'Content-Type': contentType,
     'X-Requested-With': 'XMLHttpRequest',
     token: token
   }
-  return instance
-    .post(url, formData, {
-      headers: headers,
-      showLoading: showLoading,
-      errorCallback: config.errorCallback,
-      showError: showError,
-      responseType: responseType
+
+  const requestOptions = {
+    headers: headers,
+    showLoading: showLoading,
+    errorCallback: config.errorCallback,
+    showError: showError,
+    responseType: responseType
+  }
+
+  const requestMethod =
+    method.toUpperCase() === 'GET'
+      ? instance.get(url, { params: formData, ...requestOptions })
+      : instance.post(url, formData, requestOptions)
+
+  return requestMethod
+    .then((response) => {
+      // 根据返回结果处理
+      return {
+        success: true,
+        data: response.data,
+        message: '请求成功'
+      }
     })
     .catch((error) => {
-      if (error.showError) {
-        Message.error(error.msg)
+      // 错误处理
+      if (showError) {
+        Message.error(error?.response?.data?.msg || '请求失败')
       }
-      return null
+      return {
+        success: false,
+        error: error?.response?.data || {},
+        message: error?.response?.data?.msg || 'An error occurred'
+      }
     })
 }
-
 export default request
