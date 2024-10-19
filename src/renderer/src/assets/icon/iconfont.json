@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "7771604",
+      "name": "chat2",
+      "font_class": "chat1",
+      "unicode": "e75f",
+      "unicode_decimal": 59231
+    },
+    {
+      "icon_id": "7771605",
+      "name": "chat",
+      "font_class": "chat",
+      "unicode": "e75e",
+      "unicode_decimal": 59230
+    },
+    {
+      "icon_id": "588402",
+      "name": "exit",
+      "font_class": "exit",
+      "unicode": "e650",
+      "unicode_decimal": 58960
+    },
+    {
       "icon_id": "38934798",
       "name": "maximize",
       "font_class": "maximize1",

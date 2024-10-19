@@ -38,6 +38,9 @@
         <template #right-content>
             <!-- 增加拖动栏 -->
             <div class="title-panel drag">{{ rightTitle }}</div>
+            <router-view v-slot="{ Component }">
+                <component :is="Component" ref="componentRef"></component>
+            </router-view>
         </template>
      </Layout>
 </template>
@@ -47,8 +50,8 @@ import { ref, reactive, getCurrentInstance, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router';
 const { proxy } = getCurrentInstance()
 
-const router = useRouter
-const route = useRoute
+const router = useRouter()
+const route = useRoute()
 
 const partList = ref([
     {
@@ -59,7 +62,7 @@ const partList = ref([
                 icon: 'icon-search',
                 // iconBgColor: '#B0BEC5',
                 iconBgColor: '#fa9d3b',
-                path: 'contact/search'
+                path: '/contact/search'
             },
             {
                 name: '新的朋友',
@@ -110,6 +113,16 @@ const partList = ref([
 ])
 
 const rightTitle = ref()
+const partJump = (data) => {
+    if (data.showTitle) {
+        rightTitle.value = data.name
+    } else {
+        rightTitle.value = null
+    }
+
+    // 处理联系人申请数量已读
+    router.push(data.path)
+}
 </script>
 
 <style lang="scss" scoped>
@@ -167,6 +180,7 @@ const rightTitle = ref()
         color: #515151;
         padding-left: 10px;
         margin-top: 10px;
+        margin-bottom: 10px;
     }
 
     .part-list {
@@ -176,9 +190,14 @@ const rightTitle = ref()
             align-items: center;
             padding: 10px 10px;
             position:relative;
+            // &:hover {
+            //     cursor: pointer;
+            //     background: #d6d6d7;
+            // }
             &:hover {
                 cursor: pointer;
-                background: #d6d6d7;
+                background: #e0e0e0; /* 悬停时的背景颜色 */
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* 悬停时的阴影效果 */
             }
             .iconfont {
                 width: 35px;
@@ -204,10 +223,19 @@ const rightTitle = ref()
             color: #9d9d9d;
             line-height: 30px;
         }
+        // .active {
+        //     background: #c4c4c4;
+        //     &:hover {
+        //         background: #c4c4c4;
+        //     }
+        // }
         .active {
-            background: #c4c4c4;
+            background: #e3e3e3; /* 点击时的背景颜色 */
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* 点击时的阴影效果 */
+            
             &:hover {
-                background: #c4c4c4;
+                background: #b0b0b0; /* 保持点击后的背景颜色一致 */
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* 保持点击后的阴影效果一致 */
             }
         }
     }

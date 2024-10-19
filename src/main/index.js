@@ -61,6 +61,9 @@ function createWindow() {
       label: '退出Chat',
       click: function () {
         app.exit()
+      },
+      css: {
+        fontSize: '405px' // 虽然这是示例，但需要自定义实现
       }
     }
   ]

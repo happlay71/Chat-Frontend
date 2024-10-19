@@ -116,25 +116,37 @@ instance.interceptors.response.use(
 const request = (config) => {
   const {
     url,
-    params,
+    params = {},
     method = 'POST', // 默认请求方法为 POST
     dataType,
     showLoading = true,
-    responseType = responseTypeJson,
+    responseType = 'json',
     showError = true
   } = config
 
-  let contentType = contentTypeForm
-  let formData = new FormData()
-  for (let key in params) {
-    formData.append(key, params[key] == undefined ? '' : params[key])
+  let contentType = 'application/x-www-form-urlencoded'
+  let requestData = null
+
+  // 判断数据类型
+  if (method.toUpperCase() === 'GET') {
+    // GET 请求，不需要 FormData
+    requestData = { params }
+  } else {
+    // POST 请求，判断是否是 JSON 数据
+    if (dataType === 'json') {
+      contentType = 'application/json'
+      requestData = JSON.stringify(params) // JSON 序列化
+    } else {
+      // 使用 FormData 处理其他类型
+      contentType = 'application/x-www-form-urlencoded'
+      requestData = new FormData()
+      for (let key in params) {
+        requestData.append(key, params[key] == undefined ? '' : params[key])
+      }
+    }
   }
 
-  if (dataType != null && dataType === 'json') {
-    contentType = contentTypeJson
-  }
-
-  const token = localStorage.getItem('token')
+  const token = localStorage.getItem('token') || ''
   let headers = {
     'Content-Type': contentType,
     'X-Requested-With': 'XMLHttpRequest',
@@ -149,14 +161,14 @@ const request = (config) => {
     responseType: responseType
   }
 
+  // 根据不同的请求方法来处理请求
   const requestMethod =
     method.toUpperCase() === 'GET'
-      ? instance.get(url, { params: formData, ...requestOptions })
-      : instance.post(url, formData, requestOptions)
+      ? instance.get(url, { ...requestData, ...requestOptions })
+      : instance.post(url, requestData, requestOptions)
 
   return requestMethod
     .then((response) => {
-      // 根据返回结果处理
       return {
         success: true,
         data: response.data,
@@ -164,7 +176,6 @@ const request = (config) => {
       }
     })
     .catch((error) => {
-      // 错误处理
       if (showError) {
         Message.error(error?.response?.data?.msg || '请求失败')
       }
@@ -175,4 +186,5 @@ const request = (config) => {
       }
     })
 }
+
 export default request
