@@ -119,7 +119,7 @@ const request = (config) => {
     params = {},
     method = 'POST', // 默认请求方法为 POST
     dataType,
-    showLoading = true,
+    showLoading = true, // 显示加载页面
     responseType = 'json',
     showError = true
   } = config
