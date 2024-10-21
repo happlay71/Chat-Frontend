@@ -31,8 +31,10 @@
 import { ref, reactive, getCurrentInstance, nextTick } from 'vue'
 const { proxy } = getCurrentInstance()
 import { useUserStore } from '@/stores/UserStore'
+import { useContactStateStore } from '../../stores/ContactStateStore'
 
 const userStore = useUserStore()
+const contactStateStore = useContactStateStore()
 
 // 按钮配置，动态控制 disabled 属性
 const dialogConfig = ref({
@@ -69,20 +71,24 @@ const submitApply = async () => {
   if (!result) {
     return
   }
+
   // 判断是否需要申请
-  if (result.data == 0) {
-    proxy.Message.success('添加成功')
-  } else {
-    proxy.Message.success('申请成功，等待对方同意')
-  }
+  const isImmediateSuccess = result.data == 0
+  // 提示信息
+  proxy.Message.success(isImmediateSuccess ? '添加成功' : '申请成功，等待对方同意')
+  // 隐藏对话框
   dialogConfig.value.show = false
-  emit('reload') // 刷新数据
+  // 刷新
+  emit('reload')
+  if (result.data == 0) {
+    contactStateStore.setContactReload(contactType)
+  }
 }
 
 const show = (data) => {
   dialogConfig.value.show = true
   nextTick(() => {
-    formData.value.show = true
+    formDataRef.value.show = true
     formData.value = Object.assign({}, data)
     formData.value.applyInfo = '我是' + userStore.getInfo().nickName // 自动填充 applyInfo
   })

@@ -63,12 +63,15 @@
 </template>
 
 <script setup>
-import { ref, reactive, getCurrentInstance, nextTick } from 'vue'
+import { ref, reactive, getCurrentInstance, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useContactStateStore } from '../../stores/ContactStateStore'
 const { proxy } = getCurrentInstance()
 
 const router = useRouter()
 const route = useRoute()
+
+const contactStateStore = useContactStateStore()
 
 const searchKey = ref()
 const search = () => {}
@@ -164,6 +167,23 @@ const loadContact = async (contactType) => {
 }
 loadContact('USER')
 loadContact('GROUP')
+
+// 监听响应式数据的变化
+watch(
+  () => contactStateStore.contactReload,
+  (newVal, oldVal) => {
+    if (!newVal) {
+      return
+    }
+    switch (newVal) {
+      case 'USER':
+      case 'GROUP':
+        loadContact(newVal)
+        break
+    }
+  },
+  { immediate: true, deep: true } // 初始化时立即执行一次回调函数,深度监听对象内部的变化
+)
 </script>
 
 <style lang="scss" scoped>
