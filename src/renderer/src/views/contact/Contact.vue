@@ -168,6 +168,20 @@ const loadContact = async (contactType) => {
 loadContact('USER')
 loadContact('GROUP')
 
+// 加载群组
+const loadMyGroup = async () => {
+  let result = await proxy.Request({
+    url: proxy.Api.loadMyGroup,
+    method: 'GET',
+    showLoading: false
+  })
+  if (!result) {
+    return
+  }
+  partList.value[1].contactData = result.data
+}
+loadGroup()
+
 // 监听响应式数据的变化
 watch(
   () => contactStateStore.contactReload,
@@ -176,6 +190,9 @@ watch(
       return
     }
     switch (newVal) {
+      case 'MY':
+        loadMyGroup() // 数据变化，加载我创建的群组的信息
+        break
       case 'USER':
       case 'GROUP':
         loadContact(newVal)

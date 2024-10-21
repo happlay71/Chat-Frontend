@@ -41,6 +41,11 @@ const router = createRouter({
               path: '/contact/search',
               name: '搜索好友',
               component: () => import('@/views/contact/Search.vue')
+            },
+            {
+              path: '/contact/createGroup',
+              name: '新建群聊',
+              component: () => import('@/views/contact/GroupEdit.vue')
             }
           ]
         },
