@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 4711563 */
-  src: url('iconfont.woff2?t=1729521914332') format('woff2'),
-       url('iconfont.woff?t=1729521914332') format('woff'),
-       url('iconfont.ttf?t=1729521914332') format('truetype');
+  src: url('iconfont.woff2?t=1729574613082') format('woff2'),
+       url('iconfont.woff?t=1729574613082') format('woff'),
+       url('iconfont.ttf?t=1729574613082') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-woman:before {
+  content: "\e6ee";
+}
+
+.icon-man:before {
+  content: "\e648";
+}
+
+.icon-more:before {
+  content: "\e6ad";
 }
 
 .icon-add:before {
@@ -165,10 +177,10 @@
 .icon-checkcode:before {
   content: "\e7c0";
 }
-
+/* 
 .icon-chat:before {
   content: "\e78a";
-}
+} */
 
 .icon-chat-blank:before {
   content: "\e75f";
@@ -189,3 +201,4 @@
 .icon-email:before {
   content: "\e7de";
 }
+

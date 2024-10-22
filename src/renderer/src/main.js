@@ -7,11 +7,7 @@ import 'element-plus/dist/index.css'
 import '@/assets/cust-elementplus.scss'
 import '@/assets/icon/iconfont.css'
 import '@/assets/base.scss'
-import Utils from '@/utils/Utils.js'
-import Verify from '@/utils/Verify.js'
-import Request from '@/utils/Request.js'
-import Message from '@/utils/Message.js'
-import Api from '@/utils/Api'
+
 import Layout from './components/Layout.vue'
 import WinOp from './components/WinOp.vue'
 import ContentPanel from './components/ContentPanel.vue'
@@ -20,6 +16,13 @@ import UserBaseInfo from './components/UserBaseInfo.vue'
 import Dialog from './components/Dialog.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarUpload from './components/AvatarUpload.vue'
+
+import Utils from '@/utils/Utils.js'
+import Verify from '@/utils/Verify.js'
+import Request from '@/utils/Request.js'
+import Message from '@/utils/Message.js'
+import Api from '@/utils/Api.js'
+import Confirm from '@/utils/Confirm.js'
 
 const app = createApp(App)
 
@@ -41,4 +44,5 @@ app.config.globalProperties.Verify = Verify
 app.config.globalProperties.Request = Request
 app.config.globalProperties.Message = Message
 app.config.globalProperties.Api = Api
+app.config.globalProperties.Confirm = Confirm
 app.mount('#app')

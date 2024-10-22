@@ -88,6 +88,20 @@ const submit = async () => {
     // TODO 重新加载头像
   })
 }
+
+// TODO 保存封面
+const saveCover = () => {}
+// 设置弹窗的初始化信息
+const show = (data) => {
+  formDataRef.value.resetFields()
+  formData.value = Object.assign({}, data)
+  formData.value.avatarFile = data.groupId
+}
+
+// 暴露出去
+defineExpose({
+  show
+})
 </script>
 
 <style lang="scss" scoped></style>

@@ -3,12 +3,12 @@
     <div class="avatar-show">
       <template v-if="modelValue">
         <el-image v-if="preview" :src="localFile" fit="scale-down"></el-image>
-        <ShowLoaclImage
+        <ShowLocalImage
           :fileId="props.modelValue"
           partType="avatar"
           :width="40"
           v-else
-        ></ShowLoaclImage>
+        ></ShowLocalImage>
       </template>
       <template v-else>
         <el-upload

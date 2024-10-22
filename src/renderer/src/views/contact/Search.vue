@@ -54,7 +54,6 @@ import SearchAdd from './SearchAdd.vue'
 // 判断用户类型
 const userStore = useUserStore()
 const contactTypeName = computed(() => {
-  console.log(userStore.getInfo().userId)
   if (userStore.getInfo().userId === searchResult.value.contactId) {
     return '自己'
   }

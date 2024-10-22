@@ -56,8 +56,8 @@ const userStore = useUserStore()
 
 const menuList = ref([
   {
-    name: 'chat',
-    icon: 'icon-chat',
+    name: 'message',
+    icon: 'icon-message',
     path: '/chat',
     countKey: 'chatCount',
     position: 'top'

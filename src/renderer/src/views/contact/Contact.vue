@@ -180,8 +180,23 @@ const loadMyGroup = async () => {
   }
   partList.value[1].contactData = result.data
 }
-loadGroup()
+loadMyGroup()
 
+// 获取用户或群聊详情
+const contactDetail = (contact, part) => {
+  // TODO 修改自己创建的群聊后右标题不改变
+  if (part.showTitle) {
+    rightTitle.value = contact[part.contactName]
+  } else {
+    rightTitle.value = null
+  }
+  router.push({
+    path: part.contactPath,
+    query: {
+      contactId: contact[part.contactId]
+    }
+  })
+}
 // 监听响应式数据的变化
 watch(
   () => contactStateStore.contactReload,
@@ -196,6 +211,21 @@ watch(
       case 'USER':
       case 'GROUP':
         loadContact(newVal)
+        break
+      case 'DISSOLUTION_GROUP':
+        loadMyGroup()
+        router.push('/contact/blank') // 删除后跳转到空白页面
+        rightTitle.value = null // 将标题（用户名称）置空
+        break
+      case 'LEAVE_GROUP':
+        loadContact('GROUP')
+        router.push('/contact/blank') // 删除后跳转到空白页面
+        rightTitle.value = null // 将标题（用户名称）置空
+        break
+      case 'REMOVE_USER':
+        loadContact('USER')
+        router.push('/contact/blank') // 删除后跳转到空白页面
+        rightTitle.value = null // 将标题（用户名称）置空
         break
     }
   },
